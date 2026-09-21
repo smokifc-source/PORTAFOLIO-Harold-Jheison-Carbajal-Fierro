@@ -242,13 +242,14 @@
       const SUPABASE_ANON_KEY = 'sb_publishable_NtuvCtfaapbtBJGvNG7Qlw_nA6DhnHQ';
       const BUCKET            = 'tareas';
 
+      // Auth desactivado para evitar conflicto con el login propio
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false,
-    detectSessionInUrl: false
-  }
-});
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false
+        }
+      });
 
       const folder = (curso, unidad, semana) =>
         `${curso}/${unidad}/${semana}`.replace(/\s+/g, '_').toLowerCase();
@@ -284,7 +285,10 @@
         logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
         loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
         document.querySelectorAll('.save-btn').forEach(b => b.disabled = !loggedIn);
-        document.querySelectorAll('.delete-file').forEach(b => b.style.display = loggedIn ? 'block' : 'none');
+        // Mostrar u ocultar todos los botones eliminar según sesión
+        document.querySelectorAll('.delete-file').forEach(b => {
+          b.style.display = loggedIn ? 'inline-flex' : 'none';
+        });
       };
 
       logoutBtn.addEventListener('click', () => {
@@ -387,9 +391,11 @@
 
           reales.forEach((file) => {
             const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(`${carpeta}/${file.name}`);
-            const row = document.createElement('div');
-            row.style.cssText = 'display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:4px;';
 
+            const row = document.createElement('div');
+            row.style.cssText = 'display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:6px;align-items:center;';
+
+            // Botón de descarga — visible para TODOS
             const link = document.createElement('a');
             link.className = 'saved-file';
             link.textContent = `📄 ${file.name}`;
@@ -398,19 +404,27 @@
             link.download = file.name;
             link.style.display = 'flex';
 
+            // Botón eliminar — solo visible si está autenticado
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
             delBtn.className = 'delete-file';
-            delBtn.textContent = 'Eliminar';
-            delBtn.style.display = isAuthenticated() ? 'block' : 'none';
+            delBtn.innerHTML = '🗑️ Eliminar';
+            delBtn.title = `Eliminar ${file.name}`;
+            delBtn.style.display = isAuthenticated() ? 'inline-flex' : 'none';
+            delBtn.style.alignItems = 'center';
+            delBtn.style.gap = '4px';
 
             delBtn.addEventListener('click', async () => {
-              if (!confirm(`¿Eliminar "${file.name}"?`)) return;
+              if (!confirm(`¿Seguro que deseas eliminar "${file.name}"?\nEsta acción no se puede deshacer.`)) return;
               delBtn.textContent = 'Eliminando…';
-              const { error: delErr } = await sb.storage.from(BUCKET).remove([`${carpeta}/${file.name}`]);
+              delBtn.disabled = true;
+              const { error: delErr } = await sb.storage
+                .from(BUCKET)
+                .remove([`${carpeta}/${file.name}`]);
               if (delErr) {
-                alert('No se pudo eliminar el archivo.');
-                delBtn.textContent = 'Eliminar';
+                alert('❌ No se pudo eliminar el archivo.');
+                delBtn.innerHTML = '🗑️ Eliminar';
+                delBtn.disabled = false;
               } else {
                 await renderSavedFiles();
               }
@@ -428,11 +442,13 @@
           if (!file) { alert(`Selecciona un archivo para ${weekLabel} primero.`); return; }
           saveBtn.disabled = true;
           saveBtn.textContent = 'Guardando…';
-          const { error } = await sb.storage.from(BUCKET).upload(`${carpeta}/${file.name}`, file, { upsert: true });
+          const { error } = await sb.storage
+            .from(BUCKET)
+            .upload(`${carpeta}/${file.name}`, file, { upsert: true });
           if (error) {
             alert('❌ Error al guardar: ' + error.message);
           } else {
-            alert(`✅ "${file.name}" guardado. Cualquier visitante puede verlo y descargarlo.`);
+            alert(`✅ "${file.name}" guardado correctamente.`);
             input.value = '';
             await renderSavedFiles();
           }
@@ -447,3 +463,4 @@
     </script>
   </body>
 </html>
+       
