@@ -94,11 +94,11 @@
               <div class="campus-card">
                 <div class="campus-logo">
                   <svg viewBox="0 0 220 160" role="img" aria-label="Logo UPLA">
-                    <path d="M52 18 L138 18 L188 80 L138 142 L52 142 L2 80 Z" fill="#0D4EA8"/>
-                    <path d="M62 105 C70 87,84 80,97 76 C113 71,126 72,137 64 C147 56,150 45,139 39 C125 32,109 34,96 40 C80 48,66 63,56 80 C48 94,50 102,62 105 Z" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M86 50 C82 62,83 76,94 82 C105 88,118 84,126 72" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round"/>
-                    <path d="M120 45 L149 75 L127 105" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+              <path d="M52 18 L138 18 L188 80 L138 142 L52 142 L2 80 Z" fill="#0D4EA8"/>
+              <path d="M62 105 C70 87,84 80,97 76 C113 71,126 72,137 64 C147 56,150 45,139 39 C125 32,109 34,96 40 C80 48,66 63,56 80 C48 94,50 102,62 105 Z" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M86 50 C82 62,83 76,94 82 C105 88,118 84,126 72" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round"/>
+              <path d="M120 45 L149 75 L127 105" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
                 </div>
                 <div class="campus-info">
                   <strong>Facultad de Ingeniería</strong>
@@ -242,7 +242,6 @@
       const SUPABASE_ANON_KEY = 'sb_publishable_NtuvCtfaapbtBJGvNG7Qlw_nA6DhnHQ';
       const BUCKET            = 'tareas';
 
-      // Auth desactivado para evitar conflicto con el login propio
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
           persistSession: false,
@@ -251,16 +250,19 @@
         }
       });
 
-const sanitizar = (texto) =>
-  texto
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9_\-]/g, '_')
-    .replace(/_+/g, '_')
-    .toLowerCase();
+      // Elimina tildes, espacios y caracteres especiales de rutas
+      const sanitizar = (texto) =>
+        texto
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9\-]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '')
+          .toLowerCase();
 
-const folder = (curso, unidad, semana) =>
-  `${sanitizar(curso)}/${sanitizar(unidad)}/${sanitizar(semana)}`;
+      const folder = (curso, unidad, semana) =>
+        `${sanitizar(curso)}/${sanitizar(unidad)}/${sanitizar(semana)}`;
+
       const portfolioApp       = document.getElementById('portfolioApp');
       const mainHeader         = document.getElementById('mainHeader');
       const authModal          = document.getElementById('authModal');
@@ -292,7 +294,6 @@ const folder = (curso, unidad, semana) =>
         logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
         loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
         document.querySelectorAll('.save-btn').forEach(b => b.disabled = !loggedIn);
-        // Mostrar u ocultar todos los botones eliminar según sesión
         document.querySelectorAll('.delete-file').forEach(b => {
           b.style.display = loggedIn ? 'inline-flex' : 'none';
         });
@@ -358,7 +359,8 @@ const folder = (curso, unidad, semana) =>
 
         const weekLabel  = weekItem.querySelector('label')?.textContent?.trim() || 'Semana';
         const courseName = input.closest('.course-card')?.querySelector('h3')?.textContent?.trim() || 'Curso';
-        const unitName   = input.closest('.unit-block')?.querySelector('.unit-toggle')?.textContent?.replace(/\s*[−+]\s*$/, '').trim() || 'Unidad';
+        const unitName   = input.closest('.unit-block')?.querySelector('.unit-toggle')
+                               ?.textContent?.replace(/\s*[−+]\s*$/, '').trim() || 'Unidad';
         const carpeta    = folder(courseName, unitName, weekLabel);
 
         const saveBtn = document.createElement('button');
@@ -378,7 +380,8 @@ const folder = (curso, unidad, semana) =>
 
         const renderSavedFiles = async () => {
           savedList.innerHTML = '<div class="empty-state">Cargando…</div>';
-          const { data: files, error } = await sb.storage.from(BUCKET).list(carpeta, { limit: 20 });
+          const { data: files, error } = await sb.storage
+            .from(BUCKET).list(carpeta, { limit: 20 });
           savedList.innerHTML = '';
 
           const lbl = document.createElement('div');
@@ -397,12 +400,12 @@ const folder = (curso, unidad, semana) =>
           }
 
           reales.forEach((file) => {
-            const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(`${carpeta}/${file.name}`);
+            const { data: urlData } = sb.storage
+              .from(BUCKET).getPublicUrl(`${carpeta}/${file.name}`);
 
             const row = document.createElement('div');
             row.style.cssText = 'display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:6px;align-items:center;';
 
-            // Botón de descarga — visible para TODOS
             const link = document.createElement('a');
             link.className = 'saved-file';
             link.textContent = `📄 ${file.name}`;
@@ -411,25 +414,22 @@ const folder = (curso, unidad, semana) =>
             link.download = file.name;
             link.style.display = 'flex';
 
-            // Botón eliminar — solo visible si está autenticado
             const delBtn = document.createElement('button');
             delBtn.type = 'button';
             delBtn.className = 'delete-file';
             delBtn.innerHTML = '🗑️ Eliminar';
-            delBtn.title = `Eliminar ${file.name}`;
             delBtn.style.display = isAuthenticated() ? 'inline-flex' : 'none';
             delBtn.style.alignItems = 'center';
             delBtn.style.gap = '4px';
 
             delBtn.addEventListener('click', async () => {
-              if (!confirm(`¿Seguro que deseas eliminar "${file.name}"?\nEsta acción no se puede deshacer.`)) return;
+              if (!confirm(`¿Eliminar "${file.name}"?\nEsta acción no se puede deshacer.`)) return;
               delBtn.textContent = 'Eliminando…';
               delBtn.disabled = true;
               const { error: delErr } = await sb.storage
-                .from(BUCKET)
-                .remove([`${carpeta}/${file.name}`]);
+                .from(BUCKET).remove([`${carpeta}/${file.name}`]);
               if (delErr) {
-                alert('❌ No se pudo eliminar el archivo.');
+                alert('❌ No se pudo eliminar.');
                 delBtn.innerHTML = '🗑️ Eliminar';
                 delBtn.disabled = false;
               } else {
@@ -447,14 +447,19 @@ const folder = (curso, unidad, semana) =>
           if (!isAuthenticated()) { showLoginModal(); return; }
           const file = input.files[0];
           if (!file) { alert(`Selecciona un archivo para ${weekLabel} primero.`); return; }
+
           saveBtn.disabled = true;
           saveBtn.textContent = 'Guardando…';
-        const nombreLimpio = sanitizar(file.name.replace(/\.[^.]+$/, ''))
-  + file.name.slice(file.name.lastIndexOf('.'));
 
-const { error } = await sb.storage
-  .from(BUCKET)
-  .upload(`${carpeta}/${nombreLimpio}`, file, { upsert: true });
+          // Sanitizar nombre del archivo para evitar error 400
+          const ext          = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase() : '';
+          const nombreBase   = file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name;
+          const nombreLimpio = sanitizar(nombreBase) + ext;
+
+          const { error } = await sb.storage
+            .from(BUCKET)
+            .upload(`${carpeta}/${nombreLimpio}`, file, { upsert: true });
+
           if (error) {
             alert('❌ Error al guardar: ' + error.message);
           } else {
@@ -473,4 +478,3 @@ const { error } = await sb.storage
     </script>
   </body>
 </html>
-       
