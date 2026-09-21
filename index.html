@@ -251,9 +251,16 @@
         }
       });
 
-      const folder = (curso, unidad, semana) =>
-        `${curso}/${unidad}/${semana}`.replace(/\s+/g, '_').toLowerCase();
+const sanitizar = (texto) =>
+  texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_\-]/g, '_')
+    .replace(/_+/g, '_')
+    .toLowerCase();
 
+const folder = (curso, unidad, semana) =>
+  `${sanitizar(curso)}/${sanitizar(unidad)}/${sanitizar(semana)}`;
       const portfolioApp       = document.getElementById('portfolioApp');
       const mainHeader         = document.getElementById('mainHeader');
       const authModal          = document.getElementById('authModal');
@@ -442,9 +449,12 @@
           if (!file) { alert(`Selecciona un archivo para ${weekLabel} primero.`); return; }
           saveBtn.disabled = true;
           saveBtn.textContent = 'Guardando…';
-          const { error } = await sb.storage
-            .from(BUCKET)
-            .upload(`${carpeta}/${file.name}`, file, { upsert: true });
+        const nombreLimpio = sanitizar(file.name.replace(/\.[^.]+$/, ''))
+  + file.name.slice(file.name.lastIndexOf('.'));
+
+const { error } = await sb.storage
+  .from(BUCKET)
+  .upload(`${carpeta}/${nombreLimpio}`, file, { upsert: true });
           if (error) {
             alert('❌ Error al guardar: ' + error.message);
           } else {
