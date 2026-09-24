@@ -288,16 +288,23 @@
         authModalMessage.textContent = '';
       };
 
-      const setAuthUI = (loggedIn) => {
-        welcomeUser.textContent = loggedIn ? 'Harold Jheison Carbajal Fierro' : 'Usuario';
-        document.querySelector('.role-pill').textContent = loggedIn ? 'Activo' : 'Invitado';
-        logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
-        loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
-        document.querySelectorAll('.save-btn').forEach(b => b.disabled = !loggedIn);
-        document.querySelectorAll('.delete-file').forEach(b => {
-          b.style.display = loggedIn ? 'inline-flex' : 'none';
-        });
-      };
+const setAuthUI = (loggedIn) => {
+    welcomeUser.textContent = loggedIn ? 'Harold Jheison Carbajal Fierro' : 'Usuario';
+    document.querySelector('.role-pill').textContent = loggedIn ? 'Activo' : 'Invitado';
+    logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
+    loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
+    document.querySelectorAll('.save-btn').forEach(b => {
+      b.disabled = !loggedIn;
+      b.style.display = loggedIn ? 'block' : 'none';
+    });
+    document.querySelectorAll('.delete-file').forEach(b => {
+      b.style.display = loggedIn ? 'inline-flex' : 'none';
+    });
+    // Ocultar input de archivo y botón guardar si es visitante
+    document.querySelectorAll('.week-item input[type="file"]').forEach(inp => {
+      inp.style.display = loggedIn ? 'block' : 'none';
+    });
+  };
 
       logoutBtn.addEventListener('click', () => {
         localStorage.removeItem(LOGIN_KEY);
