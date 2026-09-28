@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="estilos.css" />
+    <link rel="stylesheet" href="enlaces.css" />
   </head>
   <body>
     <header id="mainHeader" class="topbar">
@@ -38,7 +39,7 @@
     <div id="authModal" class="auth-modal hidden" aria-live="polite">
       <div class="auth-modal-panel">
         <h3>Iniciar sesión</h3>
-        <p>Debes iniciar sesión para guardar tareas y archivos del portafolio.</p>
+        <p>Debes iniciar sesión para guardar tareas, archivos y enlaces del portafolio.</p>
         <form id="quickLoginForm" class="auth-modal-form" novalidate>
           <label>
             <span>Usuario</span>
@@ -94,11 +95,11 @@
               <div class="campus-card">
                 <div class="campus-logo">
                   <svg viewBox="0 0 220 160" role="img" aria-label="Logo UPLA">
-              <path d="M52 18 L138 18 L188 80 L138 142 L52 142 L2 80 Z" fill="#0D4EA8"/>
-              <path d="M62 105 C70 87,84 80,97 76 C113 71,126 72,137 64 C147 56,150 45,139 39 C125 32,109 34,96 40 C80 48,66 63,56 80 C48 94,50 102,62 105 Z" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M86 50 C82 62,83 76,94 82 C105 88,118 84,126 72" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round"/>
-              <path d="M120 45 L149 75 L127 105" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+                    <path d="M52 18 L138 18 L188 80 L138 142 L52 142 L2 80 Z" fill="#0D4EA8"/>
+                    <path d="M62 105 C70 87,84 80,97 76 C113 71,126 72,137 64 C147 56,150 45,139 39 C125 32,109 34,96 40 C80 48,66 63,56 80 C48 94,50 102,62 105 Z" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M86 50 C82 62,83 76,94 82 C105 88,118 84,126 72" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round"/>
+                    <path d="M120 45 L149 75 L127 105" fill="none" stroke="#F4F8FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </div>
                 <div class="campus-info">
                   <strong>Facultad de Ingeniería</strong>
@@ -241,27 +242,29 @@
       const SUPABASE_URL      = 'https://objyaoljoldznezpswxn.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_NtuvCtfaapbtBJGvNG7Qlw_nA6DhnHQ';
       const BUCKET            = 'tareas';
+      const LINK_FILE         = 'enlace.json'; // aquí se guarda el enlace de cada semana
 
       const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false
-        }
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
       });
 
-      // Elimina tildes, espacios y caracteres especiales de rutas
       const sanitizar = (texto) =>
-        texto
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-zA-Z0-9\-]/g, '_')
-          .replace(/_+/g, '_')
-          .replace(/^_|_$/g, '')
-          .toLowerCase();
+        texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').toLowerCase();
 
       const folder = (curso, unidad, semana) =>
         `${sanitizar(curso)}/${sanitizar(unidad)}/${sanitizar(semana)}`;
+
+      // Valida y normaliza un enlace (solo http/https)
+      const normalizarUrl = (valor) => {
+        let u = (valor || '').trim();
+        if (!u) return null;
+        if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+        try {
+          const p = new URL(u);
+          return ['http:', 'https:'].includes(p.protocol) ? p.href : null;
+        } catch { return null; }
+      };
 
       const portfolioApp       = document.getElementById('portfolioApp');
       const mainHeader         = document.getElementById('mainHeader');
@@ -282,37 +285,37 @@
         authModal.classList.remove('hidden');
         authModalMessage.textContent = '';
       };
-
       const hideLoginModal = () => {
         authModal.classList.add('hidden');
         authModalMessage.textContent = '';
       };
 
-const setAuthUI = (loggedIn) => {
-    welcomeUser.textContent = loggedIn ? 'Harold Jheison Carbajal Fierro' : 'Usuario';
-    document.querySelector('.role-pill').textContent = loggedIn ? 'Activo' : 'Invitado';
-    logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
-    loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
-    document.querySelectorAll('.save-btn').forEach(b => {
-      b.disabled = !loggedIn;
-      b.style.display = loggedIn ? 'block' : 'none';
-    });
-    document.querySelectorAll('.delete-file').forEach(b => {
-      b.style.display = loggedIn ? 'inline-flex' : 'none';
-    });
-    // Ocultar input de archivo y botón guardar si es visitante
-    document.querySelectorAll('.week-item input[type="file"]').forEach(inp => {
-      inp.style.display = loggedIn ? 'block' : 'none';
-    });
-  };
+      const setAuthUI = (loggedIn) => {
+        welcomeUser.textContent = loggedIn ? 'Harold Jheison Carbajal Fierro' : 'Usuario';
+        document.querySelector('.role-pill').textContent = loggedIn ? 'Activo' : 'Invitado';
+        logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
+        loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
+        document.querySelectorAll('.save-btn').forEach(b => {
+          b.disabled = !loggedIn;
+          b.style.display = loggedIn ? 'block' : 'none';
+        });
+        document.querySelectorAll('.delete-file, .delete-link').forEach(b => {
+          b.style.display = loggedIn ? 'inline-flex' : 'none';
+        });
+        document.querySelectorAll('.week-item input[type="file"]').forEach(inp => {
+          inp.style.display = loggedIn ? 'block' : 'none';
+        });
+        // Formulario para escribir el enlace: solo con sesión iniciada
+        document.querySelectorAll('.link-edit').forEach(f => {
+          f.style.display = loggedIn ? 'grid' : 'none';
+        });
+      };
 
       logoutBtn.addEventListener('click', () => {
         localStorage.removeItem(LOGIN_KEY);
         setAuthUI(false);
       });
-
       loginBtn.addEventListener('click', showLoginModal);
-
       cancelLoginBtn.addEventListener('click', () => {
         hideLoginModal();
         loginUserInput.value = '';
@@ -381,6 +384,95 @@ const setAuthUI = (loggedIn) => {
         savedList.className = 'saved-list';
         weekItem.appendChild(savedList);
 
+        // ===== Apartado de enlace =====
+        const linkBox = document.createElement('div');
+        linkBox.className = 'link-box';
+        linkBox.innerHTML = `
+          <div class="folder-label">🔗 Enlace de la tarea</div>
+          <div class="link-view"></div>
+          <div class="link-edit">
+            <input type="url" class="link-input" placeholder="Pega aquí el enlace (https://...)" />
+            <button type="button" class="link-save-btn">Guardar enlace</button>
+          </div>`;
+        weekItem.appendChild(linkBox);
+
+        const linkView  = linkBox.querySelector('.link-view');
+        const linkEdit  = linkBox.querySelector('.link-edit');
+        const linkInput = linkBox.querySelector('.link-input');
+        const linkSave  = linkBox.querySelector('.link-save-btn');
+        linkEdit.style.display = isAuthenticated() ? 'grid' : 'none';
+
+        const renderLink = async (existe) => {
+          linkView.innerHTML = '';
+          if (!existe) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'Sin enlace guardado';
+            linkView.appendChild(empty);
+            return;
+          }
+          const { data: blob, error } = await sb.storage.from(BUCKET).download(`${carpeta}/${LINK_FILE}?t=${Date.now()}`);
+          let url = null;
+          if (!error && blob) {
+            try { url = normalizarUrl(JSON.parse(await blob.text()).url); } catch {}
+          }
+          if (!url) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'Sin enlace guardado';
+            linkView.appendChild(empty);
+            return;
+          }
+
+          const row = document.createElement('div');
+          row.className = 'link-row';
+
+          const a = document.createElement('a');
+          a.className = 'saved-file saved-link';
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = `🌐 ${url}`;
+
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.className = 'delete-link';
+          del.innerHTML = '🗑️ Quitar';
+          del.style.display = isAuthenticated() ? 'inline-flex' : 'none';
+          del.addEventListener('click', async () => {
+            if (!isAuthenticated()) { showLoginModal(); return; }
+            if (!confirm('¿Quitar este enlace?')) return;
+            del.disabled = true;
+            const { error: e } = await sb.storage.from(BUCKET).remove([`${carpeta}/${LINK_FILE}`]);
+            if (e) { alert('❌ No se pudo quitar el enlace.'); del.disabled = false; }
+            else { await renderSavedFiles(); }
+          });
+
+          row.appendChild(a);
+          row.appendChild(del);
+          linkView.appendChild(row);
+        };
+
+        linkSave.addEventListener('click', async () => {
+          if (!isAuthenticated()) { showLoginModal(); return; }
+          const url = normalizarUrl(linkInput.value);
+          if (!url) { alert('Ingresa un enlace válido (ej: https://misitio.com).'); return; }
+
+          linkSave.disabled = true;
+          linkSave.textContent = 'Guardando…';
+          const blob = new Blob([JSON.stringify({ url })], { type: 'application/json' });
+          const { error } = await sb.storage.from(BUCKET)
+            .upload(`${carpeta}/${LINK_FILE}`, blob, { upsert: true, contentType: 'application/json' });
+          if (error) {
+            alert('❌ Error al guardar el enlace: ' + error.message);
+          } else {
+            linkInput.value = '';
+            await renderSavedFiles();
+          }
+          linkSave.disabled = false;
+          linkSave.textContent = 'Guardar enlace';
+        });
+
         input.addEventListener('click', (e) => {
           if (!isAuthenticated()) { e.preventDefault(); showLoginModal(); }
         });
@@ -396,7 +488,12 @@ const setAuthUI = (loggedIn) => {
           lbl.textContent = `${unitName} › ${weekLabel}`;
           savedList.appendChild(lbl);
 
-          const reales = (files || []).filter(f => f.name !== '.emptyFolderPlaceholder');
+          const todos  = files || [];
+          const existeEnlace = todos.some(f => f.name === LINK_FILE);
+          renderLink(existeEnlace);
+
+          // El archivo del enlace no se muestra como archivo de tarea
+          const reales = todos.filter(f => f.name !== '.emptyFolderPlaceholder' && f.name !== LINK_FILE);
 
           if (error || reales.length === 0) {
             const empty = document.createElement('div');
@@ -458,7 +555,6 @@ const setAuthUI = (loggedIn) => {
           saveBtn.disabled = true;
           saveBtn.textContent = 'Guardando…';
 
-          // Sanitizar nombre del archivo para evitar error 400
           const ext          = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase() : '';
           const nombreBase   = file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name;
           const nombreLimpio = sanitizar(nombreBase) + ext;
