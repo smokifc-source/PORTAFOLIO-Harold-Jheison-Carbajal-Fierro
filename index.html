@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portafolio Académico UPLA</title>
+    <title>Harold Jheison · Portafolio Académico UPLA</title>
+    <meta name="description" content="Portafolio académico de Harold Jheison Carbajal Fierro: cursos, unidades, tareas y proyectos de Ingeniería de Sistemas en la UPLA.">
+    <meta name="theme-color" content="#0d4ea8">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -12,6 +14,7 @@
     <link rel="stylesheet" href="enlaces.css" />
   </head>
   <body>
+    <a class="skip-link" href="#portfolioApp">Saltar al contenido</a>
     <header id="mainHeader" class="topbar">
       <div class="container nav">
         <div class="brand" aria-label="Logo UPLA">
@@ -28,26 +31,27 @@
             <span class="brand-sub">UNIVERSIDAD PERUANA LOS ANDES</span>
           </div>
         </div>
-        <nav class="menu">
+        <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mainNav">Menú <span aria-hidden="true">☰</span></button>
+        <nav class="menu" id="mainNav" aria-label="Navegación principal">
           <a href="#inicio">Inicio</a>
           <a href="#sobre-mi">Sobre mí</a>
-          <a href="#cursos">Cursos</a>
+          <a href="#cursos" class="menu-courses">Explorar cursos <span aria-hidden="true">↗</span></a>
         </nav>
       </div>
     </header>
 
-    <div id="authModal" class="auth-modal hidden" aria-live="polite">
+    <div id="authModal" class="auth-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
       <div class="auth-modal-panel">
-        <h3>Iniciar sesión</h3>
-        <p>Debes iniciar sesión para guardar tareas, archivos y enlaces del portafolio.</p>
+        <h3 id="authModalTitle">Acceso de edición</h3>
+        <p>Ingresa para administrar los archivos y enlaces de tus tareas.</p>
         <form id="quickLoginForm" class="auth-modal-form" novalidate>
           <label>
             <span>Usuario</span>
-            <input type="text" id="loginUserInput" placeholder="Ingresa tu usuario" required />
+            <input type="text" id="loginUserInput" placeholder="Ingresa tu usuario" autocomplete="username" required />
           </label>
           <label>
             <span>Contraseña</span>
-            <input type="password" id="loginPasswordInput" placeholder="Ingresa tu contraseña" required />
+            <input type="password" id="loginPasswordInput" placeholder="Ingresa tu contraseña" autocomplete="current-password" required />
           </label>
           <div class="auth-modal-actions">
             <button type="submit" class="auth-btn primary">Ingresar</button>
@@ -61,7 +65,7 @@
     <main id="portfolioApp" class="portfolio-content">
       <div class="container">
         <div class="welcome-bar">
-          <span>Bienvenido, <strong id="welcomeUser">Harold Jheison Carbajal Fierro</strong></span>
+          <span class="welcome-copy"><span class="welcome-dot" aria-hidden="true"></span><span>Mi portafolio académico <strong id="welcomeUser">Harold Jheison Carbajal Fierro</strong></span></span>
           <div class="welcome-actions">
             <span class="role-pill">Activo</span>
             <button type="button" id="logoutBtn" class="logout-btn">Cerrar sesión</button>
@@ -73,14 +77,15 @@
       <section class="hero" id="inicio">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Portafolio de alumno</p>
-            <h1>Harold Jheison Carbajal Fierro</h1>
+            <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> UPLA / INGENIERÍA DE SISTEMAS</p>
+            <h1>Harold Jheison<br><span>Carbajal Fierro.</span></h1>
+            <p class="hero-subtitle">Aprender. Construir. Seguir creciendo.</p>
             <p class="lead">
               Facultad de Ingeniería de Sistemas<br />
               Este portafolio presenta los contenidos de dos cursos clave: Taller de Desarrollo de Aplicación y Algoritmos y Estructura de Datos, organizados por unidades y semanas del ciclo académico.
             </p>
             <div class="actions">
-              <a class="btn btn-primary" href="#cursos">Ver cursos</a>
+              <a class="btn btn-primary" href="#cursos">Explorar mis cursos <span aria-hidden="true">↗</span></a>
               <a class="btn btn-secondary" href="#sobre-mi">Sobre mí</a>
             </div>
             <ul class="stats" aria-label="estadísticas">
@@ -91,7 +96,7 @@
           </div>
           <div class="hero-visual" aria-label="Resumen académico">
             <div class="profile-card">
-              <div class="profile-badge">UPLA</div>
+              <div class="profile-badge">PORTAFOLIO / IV CICLO</div><span class="visual-code code-left" aria-hidden="true">&lt;/&gt;</span><span class="visual-code code-right" aria-hidden="true">{ }</span>
               <div class="campus-card">
                 <div class="campus-logo">
                   <svg viewBox="0 0 220 160" role="img" aria-label="Logo UPLA">
@@ -109,17 +114,18 @@
             </div>
           </div>
         </div>
+        <div class="container hero-bottom"><span>UN ESPACIO PARA TODO LO QUE APRENDO</span><a href="#cursos">Seguir explorando <span aria-hidden="true">↓</span></a></div>
       </section>
 
       <section class="about section" id="sobre-mi">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">Sobre mí</p>
+            <p class="eyebrow">01 / DETRÁS DEL PORTAFOLIO</p>
             <h2>Estudiante de ingeniería de sistemas del IV ciclo.</h2>
           </div>
           <div class="about-feature">
             <div class="about-photo">
-              <img src="WhatsApp Image 2026-09-16 at 10.18.07 PM.jpeg" alt="Harold Jheison Carbajal Fierro" />
+              <img src="WhatsApp Image 2026-09-16 at 10.18.07 PM.jpeg" alt="Harold Jheison Carbajal Fierro" loading="lazy" decoding="async" />
             </div>
             <div class="about-content">
               <div class="about-card">
@@ -142,9 +148,16 @@
       <section class="courses section" id="cursos">
         <div class="container">
           <div class="section-heading">
-            <p class="eyebrow">Cursos</p>
+            <p class="eyebrow">02 / MI CAMINO DE APRENDIZAJE</p>
             <h2>Plan de aprendizaje por semanas y unidades.</h2>
           </div>
+          <div class="course-toolbar">
+            <label class="search-control"><span>Buscar un tema o una semana</span><input id="taskSearch" type="search" placeholder="Ej.: recursividad, base de datos…" autocomplete="off"></label>
+            <label class="course-filter"><span>Curso</span><select id="courseFilter"><option value="all">Todos los cursos</option><option value="0">Taller de Desarrollo de Aplicación</option><option value="1">Algoritmos y Estructura de Datos</option></select></label>
+            <button id="expandUnits" type="button" class="expand-btn">Expandir unidades <span aria-hidden="true">+</span></button>
+          </div>
+          <div class="course-results"><span id="searchResults" role="status" aria-live="polite">32 semanas para explorar</span><span>Archivos y enlaces por semana</span></div>
+          <p id="noResults" class="no-results" hidden>No encontramos ese tema. Prueba otra palabra o cambia el curso.</p>
           <div class="course-grid">
 
             <article class="course-card">
@@ -156,40 +169,40 @@
               <div class="unit-block">
                 <h4 data-titulo="Programación orientada a objetos">Unidad 1</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 1</label><span>Inicialización del proyecto y ventanas principales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 2</label><span>Organización del espacio con contenedores</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 3</label><span>Implementación de menús y navegación</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 4</label><span>Integración de componentes básicos y validación visual</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 1</label><span>Inicialización del proyecto y ventanas principales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 2</label><span>Organización del espacio con contenedores</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 3</label><span>Implementación de menús y navegación</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 4</label><span>Integración de componentes básicos y validación visual</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Componentes de una aplicación">Unidad 2</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 5</label><span>Gestión de archivos y persistencia de datos locales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 6</label><span>Personalización visual avanzada e identidad del proyecto</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 7</label><span>Diseño de interfaces complejas con tablas y listas de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 8</label><span>Mensajes, diálogos de usuario y cierre de fase</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 5</label><span>Gestión de archivos y persistencia de datos locales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 6</label><span>Personalización visual avanzada e identidad del proyecto</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 7</label><span>Diseño de interfaces complejas con tablas y listas de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 8</label><span>Mensajes, diálogos de usuario y cierre de fase</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Base de datos">Unidad 3</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 9</label><span>Conectividad y configuración del driver de base de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 10</label><span>Operaciones de persistencia I (inserción y lectura de datos)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 11</label><span>Operaciones de persistencia II (actualización, eliminación y transacciones)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 12</label><span>Vinculación dinámica y cierre de la capa de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 9</label><span>Conectividad y configuración del driver de base de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 10</label><span>Operaciones de persistencia I (inserción y lectura de datos)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 11</label><span>Operaciones de persistencia II (actualización, eliminación y transacciones)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 12</label><span>Vinculación dinámica y cierre de la capa de datos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Empaquetamiento de la aplicación">Unidad 4</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 13</label><span>Migración a arquitectura cliente-servidor e hilos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 14</label><span>Depuración, manejo de excepciones y pruebas del sistema</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 15</label><span>Compilación y generación del archivo ejecutable</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 16</label><span>Sustentación del proyecto final y cierre de curso</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 13</label><span>Migración a arquitectura cliente-servidor e hilos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 14</label><span>Depuración, manejo de excepciones y pruebas del sistema</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 15</label><span>Compilación y generación del archivo ejecutable</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 16</label><span>Sustentación del proyecto final y cierre de curso</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
             </article>
@@ -203,40 +216,40 @@
               <div class="unit-block">
                 <h4 data-titulo="Conceptos de algoritmos y estructuras de datos">Unidad 1</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 1</label><span>Arreglos bidimensionales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 2</label><span>Arreglos paralelos y arreglos de objetos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 3</label><span>Clases ArrayList y Vector</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 4</label><span>Clase LinkedList</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 1</label><span>Arreglos bidimensionales</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 2</label><span>Arreglos paralelos y arreglos de objetos</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 3</label><span>Clases ArrayList y Vector</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 4</label><span>Clase LinkedList</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Pilas, colas y recursividad">Unidad 2</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 5</label><span>Pilas (TDA pila y clase Stack)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 6</label><span>Colas (TDA cola y aplicaciones)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 7</label><span>Recursividad y recursividad múltiple</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 8</label><span>Recursividad anidada</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 5</label><span>Pilas (TDA pila y clase Stack)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 6</label><span>Colas (TDA cola y aplicaciones)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 7</label><span>Recursividad y recursividad múltiple</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 8</label><span>Recursividad anidada</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Listas enlazadas">Unidad 3</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 9</label><span>Listas simplemente enlazadas (LSE)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 10</label><span>Listas circulares simples (LCS)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 11</label><span>Listas doblemente enlazadas (LDE)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 12</label><span>Listas circulares dobles (LCD)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 9</label><span>Listas simplemente enlazadas (LSE)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 10</label><span>Listas circulares simples (LCS)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 11</label><span>Listas doblemente enlazadas (LDE)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 12</label><span>Listas circulares dobles (LCD)</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
 
               <div class="unit-block">
                 <h4 data-titulo="Árboles, grafos, métodos de ordenación y búsqueda">Unidad 4</h4>
                 <div class="weeks">
-                  <div class="week-item"><label>Semana 13</label><span>Árboles generales y binarios</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 14</label><span>Grafos y su representación</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 15</label><span>Métodos de ordenación y búsqueda</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
-                  <div class="week-item"><label>Semana 16</label><span>Exposición del trabajo final y evaluación final</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 13</label><span>Árboles generales y binarios</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 14</label><span>Grafos y su representación</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 15</label><span>Métodos de ordenación y búsqueda</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
+                  <div class="week-item"><label>Semana 16</label><span>Exposición del trabajo final y evaluación final</span><input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar" /></div>
                 </div>
               </div>
             </article>
@@ -245,6 +258,8 @@
         </div>
       </section>
     </main>
+    <footer class="site-footer"><div class="container footer-top"><div><strong>Harold Jheison Carbajal Fierro</strong><p>Ingeniería de Sistemas · Universidad Peruana Los Andes</p></div><a href="#inicio">Volver arriba <span aria-hidden="true">↑</span></a></div><div class="container footer-bottom"><span>© 2026 · Portafolio académico</span><span>Hecho para aprender y compartir.</span></div></footer>
+    <div id="notification" class="notification" role="status" aria-live="polite"></div>
 
     <script>
       const SUPABASE_URL      = 'https://objyaoljoldznezpswxn.supabase.co';
@@ -263,14 +278,15 @@
       const folder = (curso, unidad, semana) =>
         `${sanitizar(curso)}/${sanitizar(unidad)}/${sanitizar(semana)}`;
 
-      // Valida y normaliza un enlace (solo http/https)
+      // Admite dominios sin esquema y rechaza protocolos ajenos a http/https.
       const normalizarUrl = (valor) => {
         let u = (valor || '').trim();
-        if (!u) return null;
+        if (!u || /[\s\\]/.test(u)) return null;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(u) && !/^https?:\/\//i.test(u)) return null;
         if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
         try {
           const p = new URL(u);
-          return ['http:', 'https:'].includes(p.protocol) ? p.href : null;
+          return ['http:', 'https:'].includes(p.protocol) && !p.username && !p.password && p.hostname.includes('.') ? p.href : null;
         } catch { return null; }
       };
 
@@ -287,7 +303,9 @@
       const welcomeUser        = document.getElementById('welcomeUser');
 
       const LOGIN_KEY       = 'portfolio_session_active';
-      const isAuthenticated = () => localStorage.getItem(LOGIN_KEY) === 'true';
+      const isAuthenticated = () => { try { return localStorage.getItem(LOGIN_KEY) === 'true'; } catch { return false; } };
+      // Este acceso visual conserva la compatibilidad del portafolio original.
+      // La autorización real debe configurarse en Supabase (Auth y políticas RLS).
 
       const showLoginModal = () => {
         authModal.classList.remove('hidden');
@@ -299,7 +317,7 @@
       };
 
       const setAuthUI = (loggedIn) => {
-        welcomeUser.textContent = loggedIn ? 'Harold Jheison Carbajal Fierro' : 'Usuario';
+        welcomeUser.textContent = loggedIn ? 'Modo de edición' : 'Harold Jheison Carbajal Fierro';
         document.querySelector('.role-pill').textContent = loggedIn ? 'Activo' : 'Invitado';
         logoutBtn.style.display = loggedIn ? 'inline-flex' : 'none';
         loginBtn.style.display  = loggedIn ? 'none' : 'inline-flex';
@@ -320,7 +338,7 @@
       };
 
       logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem(LOGIN_KEY);
+        try { localStorage.removeItem(LOGIN_KEY); } catch {}
         setAuthUI(false);
       });
       loginBtn.addEventListener('click', showLoginModal);
@@ -342,7 +360,10 @@
           authModalMessage.textContent = 'Usuario o contraseña incorrectos.';
           return;
         }
-        localStorage.setItem(LOGIN_KEY, 'true');
+        try { localStorage.setItem(LOGIN_KEY, 'true'); } catch {
+          authModalMessage.textContent = 'El navegador no permite guardar la sesión. Revisa sus ajustes de almacenamiento.';
+          return;
+        }
         setAuthUI(true);
         hideLoginModal();
         loginUserInput.value = '';
@@ -360,6 +381,9 @@
         btn.type = 'button';
         btn.className = 'unit-toggle';
         btn.setAttribute('aria-expanded', 'false');
+        const unitId = `weeks-${Array.from(document.querySelectorAll('.unit-block')).indexOf(block)}`;
+        weeks.id = unitId;
+        btn.setAttribute('aria-controls', unitId);
         // "Unidad N" se guarda aparte: se usa para el nombre de carpeta en Supabase
         btn.dataset.unidad = title.textContent.trim();
         const nombre = title.dataset.titulo;
@@ -371,6 +395,7 @@
           btn.setAttribute('aria-expanded', String(open));
           weeks.hidden = !open;
           btn.querySelector('.toggle-icon').textContent = open ? '−' : '+';
+          if (open) block.querySelectorAll('.week-item:not([hidden])').forEach(item => item.dispatchEvent(new Event('portfolio:refresh')));
         });
       });
 
@@ -422,7 +447,11 @@
             linkView.appendChild(empty);
             return;
           }
-          const { data: blob, error } = await sb.storage.from(BUCKET).download(`${carpeta}/${LINK_FILE}?t=${Date.now()}`);
+          const { data: blob, error } = await sb.storage.from(BUCKET).download(`${carpeta}/${LINK_FILE}`);
+          if (error) {
+            linkView.textContent = 'No se pudo cargar el enlace. Vuelve a abrir la unidad para reintentar.';
+            return false;
+          }
           let url = null;
           if (!error && blob) {
             try { url = normalizarUrl(JSON.parse(await blob.text()).url); } catch {}
@@ -471,6 +500,7 @@
 
           linkSave.disabled = true;
           linkSave.textContent = 'Guardando…';
+          try {
           const blob = new Blob([JSON.stringify({ url })], { type: 'application/json' });
           const { error } = await sb.storage.from(BUCKET)
             .upload(`${carpeta}/${LINK_FILE}`, blob, { upsert: true, contentType: 'application/json' });
@@ -480,18 +510,27 @@
             linkInput.value = '';
             await renderSavedFiles();
           }
-          linkSave.disabled = false;
-          linkSave.textContent = 'Guardar enlace';
+          } catch {
+            alert('No se pudo guardar el enlace. Comprueba la conexión e intenta de nuevo.');
+          } finally {
+            linkSave.disabled = false;
+            linkSave.textContent = 'Guardar enlace';
+          }
         });
 
         input.addEventListener('click', (e) => {
           if (!isAuthenticated()) { e.preventDefault(); showLoginModal(); }
         });
 
+        let hasLoaded = false;
+        let loading = false;
         const renderSavedFiles = async () => {
+          if (loading) return;
+          loading = true;
+          try {
           savedList.innerHTML = '<div class="empty-state">Cargando…</div>';
           const { data: files, error } = await sb.storage
-            .from(BUCKET).list(carpeta, { limit: 20 });
+            .from(BUCKET).list(carpeta, { limit: 1000, sortBy: { column: 'name', order: 'asc' } });
           savedList.innerHTML = '';
 
           const lbl = document.createElement('div');
@@ -501,7 +540,11 @@
 
           const todos  = files || [];
           const existeEnlace = todos.some(f => f.name === LINK_FILE);
-          renderLink(existeEnlace);
+          let linkLoaded = false;
+          if (!error) linkLoaded = await renderLink(existeEnlace);
+          else linkView.textContent = 'No se pudieron cargar los enlaces.';
+          weekItem.classList.toggle('has-material', !error && todos.some(f => f.name !== '.emptyFolderPlaceholder'));
+          hasLoaded = !error && linkLoaded !== false;
 
           // El archivo del enlace no se muestra como archivo de tarea
           const reales = todos.filter(f => f.name !== '.emptyFolderPlaceholder' && f.name !== LINK_FILE);
@@ -526,6 +569,7 @@
             link.textContent = `📄 ${file.name}`;
             link.href = urlData.publicUrl;
             link.target = '_blank';
+            link.rel = 'noopener noreferrer';
             link.download = file.name;
             link.style.display = 'flex';
 
@@ -538,6 +582,7 @@
             delBtn.style.gap = '4px';
 
             delBtn.addEventListener('click', async () => {
+              if (!isAuthenticated()) { showLoginModal(); return; }
               if (!confirm(`¿Eliminar "${file.name}"?\nEsta acción no se puede deshacer.`)) return;
               delBtn.textContent = 'Eliminando…';
               delBtn.disabled = true;
@@ -556,6 +601,11 @@
             row.appendChild(delBtn);
             savedList.appendChild(row);
           });
+          } catch {
+            savedList.textContent = 'No se pudo cargar el material. Cierra y vuelve a abrir la unidad para reintentar.';
+          } finally {
+            loading = false;
+          }
         };
 
         saveBtn.addEventListener('click', async () => {
@@ -563,8 +613,11 @@
           const file = input.files[0];
           if (!file) { alert(`Selecciona un archivo para ${weekLabel} primero.`); return; }
 
+          if (file.size > 50 * 1024 * 1024) { alert('El archivo debe pesar como máximo 50 MB.'); return; }
+          if (!/\.(pdf|doc|docx|jpg|jpeg|png|zip|rar)$/i.test(file.name)) { alert('Usa un archivo PDF, Word, imagen, ZIP o RAR.'); return; }
           saveBtn.disabled = true;
           saveBtn.textContent = 'Guardando…';
+          try {
 
           const ext          = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')).toLowerCase() : '';
           const nombreBase   = file.name.includes('.') ? file.name.slice(0, file.name.lastIndexOf('.')) : file.name;
@@ -572,23 +625,29 @@
 
           const { error } = await sb.storage
             .from(BUCKET)
-            .upload(`${carpeta}/${nombreLimpio}`, file, { upsert: true });
+            .upload(`${carpeta}/${nombreLimpio}`, file, { upsert: false });
 
           if (error) {
-            alert('❌ Error al guardar: ' + error.message);
+            alert('No se pudo guardar. Si ya existe un archivo con ese nombre, cambia el nombre para conservar el anterior. Detalle: ' + error.message);
           } else {
             alert(`✅ "${file.name}" guardado correctamente.`);
             input.value = '';
             await renderSavedFiles();
           }
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Guardar';
+          } catch {
+            alert('No se pudo guardar el archivo. Comprueba la conexión e intenta de nuevo.');
+          } finally {
+            saveBtn.disabled = !isAuthenticated();
+            saveBtn.textContent = 'Guardar';
+          }
         });
 
-        renderSavedFiles();
+        savedList.textContent = 'Abre la unidad para consultar el material.';
+        weekItem.addEventListener('portfolio:refresh', () => { if (!hasLoaded) renderSavedFiles(); });
       });
 
       setAuthUI(isAuthenticated());
     </script>
+    <script src="mejoras.js"></script>
   </body>
 </html>
