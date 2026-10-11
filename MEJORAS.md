@@ -1,27 +1,29 @@
-# Mejoras del portafolio
+# Portafolio académico · segunda versión
 
-Se conservan el perfil, la fotografía, los dos cursos, sus ocho unidades, las 32 semanas y las rutas originales del bucket `tareas`. No se modifica ni se elimina material de Supabase.
+El portafolio conserva los dos cursos, ocho unidades, 32 temas semanales y la fotografía original. La nueva portada presenta a Harold Jheison y ofrece acceso directo a sus materiales académicos.
 
-## Cambios
+## Diseño y navegación
 
-- Portada y diseño institucional azul con tipografía, espaciado y contraste más claros.
-- Menú móvil, búsqueda por tema o semana, filtro de curso y expansión de unidades.
-- Estilos de enlaces incluidos en `enlaces.css`, que estaba referenciado pero faltaba en el repositorio.
-- Apertura y cierre accesibles del diálogo de edición, etiquetas para seleccionar archivos y enlaces, y alternativa visual si la fotografía no carga.
-- El material se consulta al abrir una unidad, en lugar de iniciar las 32 consultas al cargar la portada. Se puede reintentar una consulta fallida cerrando y abriendo la unidad.
-- Descarga de `enlace.json` corregida para usar su ruta real, enlaces con protocolos validados y pestañas nuevas con `noopener noreferrer`.
-- Las cargas no sobrescriben archivos existentes. Se valida la extensión y un máximo de 50 MB en la interfaz; el bucket puede tener un límite menor.
+- Paleta azul profundo, superficies claras y acentos verdes; modo oscuro con colores propios y preferencia guardada en el navegador.
+- Explorador con pestañas de curso y unidad, búsqueda por tema y filas semanales desplegables.
+- Favoritos, semanas revisadas y acceso a la última semana abierta. Este seguimiento pertenece al navegador y no representa notas ni entregas académicas.
+- Menú móvil, enlaces de unidad para compartir, atajo `/` para buscar, foco de teclado y respeto por movimiento reducido.
+- Retrato real, biografía conservada y presentación de LION como idea en exploración.
 
-## Archivos
+## Materiales
 
-`index.html`, `estilos.css`, `enlaces.css` y `mejoras.js` deben quedar juntos en la raíz. La fotografía conserva su nombre y ubicación original. `archivo.java` no se modifica.
+Las rutas se conservan con la regla original: nombre del curso / `Unidad N` / `Semana N`, normalizados a minúsculas y sin tildes. Los archivos se cargan al abrir una semana y se pueden actualizar o reintentar si falla la conexión. Las listas se paginan y los enlaces se leen desde `enlace.json`.
 
-## Acceso y permisos
+Las cargas aceptan PDF, Word, JPG, PNG, ZIP y RAR hasta 50 MB. Los archivos nuevos usan `upsert: false` para evitar sobrescrituras. El formulario valida los enlaces HTTP/HTTPS y rechaza protocolos ejecutables y credenciales en URL. El enlace de una tarea mantiene `upsert: true` y se guarda como JSON. La eliminación requiere confirmar el elemento elegido.
 
-El acceso de edición original valida un usuario y contraseña en JavaScript y guarda una bandera en el navegador. Se mantiene para no romper el flujo existente, pero **no es autenticación real ni protege las operaciones del bucket**. La clave publishable de Supabase es una clave de cliente; los permisos reales deben aplicarse mediante Supabase Auth y políticas de Storage/RLS. No se modificaron ni se verificaron las políticas del servidor en esta mejora.
+## Estructura
 
-Para reemplazar ese acceso por autenticación real se necesita configurar la cuenta del propietario y las políticas de lectura/escritura en Supabase; esta rama no crea cuentas ni cambia permisos.
+`index.html`, `estilos.css` y `enlaces.css` contienen la interfaz. `cursos.js` conserva el contenido académico; `utilidades.js` contiene filtros y validaciones; `almacenamiento.js` agrupa las operaciones de Supabase; `mejoras.js` conecta las interacciones. El sitio es estático y no necesita instalación ni compilación.
 
-## Validación
+## Validación y límites
 
-Se verifican la sintaxis JavaScript, los recursos y anclas, la conservación de contenidos y rutas, y la normalización de enlaces y construcción de rutas con datos de ejemplo. No se realizan cargas, modificaciones ni eliminaciones en el bucket real. La revisión visual en navegador y una prueba integral con Supabase siguen pendientes.
+Se verificaron sintaxis JavaScript, recursos y anclas, referencias de IDs, estructura de CSS, los 32 temas y sus rutas, filtros, datos personales, validación de URL y archivos. Las pruebas del adaptador usaron un cliente simulado para comprobar paginación, errores, lectura de enlaces, cargas y eliminación. Las 12 combinaciones principales de texto de cada tema superan una relación de contraste de 4.5:1 por cálculo.
+
+La revisión visual en navegador y la prueba integral contra el almacenamiento real quedan pendientes. No se hicieron cargas, eliminaciones ni cambios de políticas en Supabase durante el desarrollo.
+
+El acceso de edición usa Supabase Auth con correo y contraseña, sin credenciales incrustadas en el código. Requiere una cuenta existente del proyecto Supabase; no se creó ninguna cuenta ni se modificó su configuración. La sesión restaurada se valida con `getUser()`. Las políticas de Storage/RLS existentes siguen determinando la autorización para escribir y eliminar; no se verificaron ni modificaron durante este cambio. La marca de sesión del acceso anterior deja de habilitar la edición.

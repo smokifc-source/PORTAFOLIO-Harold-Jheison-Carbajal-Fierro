@@ -1,79 +1,113 @@
-(() => {
+(function(){
   'use strict';
-  const $ = (selector,root=document) => root.querySelector(selector);
-  const $$ = (selector,root=document) => [...root.querySelectorAll(selector)];
-  const nav = $('#mainNav'), menu = $('#menuToggle');
-  const toggleMenu = (open) => { menu.setAttribute('aria-expanded',String(open)); nav.classList.toggle('is-open',open); };
-  menu.addEventListener('click',() => toggleMenu(menu.getAttribute('aria-expanded') !== 'true'));
-  $$('#mainNav a').forEach(link => link.addEventListener('click',() => toggleMenu(false)));
-  const normalize = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-  const cards = $$('.course-card'), search = $('#taskSearch'), filter = $('#courseFilter');
-  const expand = $('#expandUnits');
-  let savedExpansion = null;
-  const setUnit = (block,open) => {
-    const button = $('.unit-toggle',block), weeks = $('.weeks',block);
-    if(!button || !weeks) return;
-    block.classList.toggle('is-open',open);button.setAttribute('aria-expanded',String(open));weeks.hidden=!open;
-    $('.toggle-icon',button).textContent=open?'−':'+';
-    if(open&&!block.hidden&&!block.closest('.course-card').hidden) $$('.week-item:not([hidden])',block).forEach(item=>item.dispatchEvent(new Event('portfolio:refresh')));
-  };
-  const updateExpandLabel = () => {
-    const visible=$$('.unit-block').filter(b=>!b.hidden&&!b.closest('.course-card').hidden);
-    const allOpen=visible.length>0&&visible.every(b=>b.classList.contains('is-open'));
-    expand.innerHTML=allOpen?'Contraer unidades <span aria-hidden="true">−</span>':'Expandir unidades <span aria-hidden="true">+</span>';
-  };
-  const applyFilter = () => {
-    const query=normalize(search.value), searching=query.length>0;
-    if(searching && !savedExpansion) savedExpansion=$$('.unit-block').map(b=>b.classList.contains('is-open'));
-    let matches=0;
-    cards.forEach((card,index)=>{
-      const courseAllowed=filter.value==='all'||filter.value===String(index);let courseMatches=0;
-      $$('.unit-block',card).forEach(block=>{
-        const unitText=normalize($('.unit-toggle',block)?.textContent||'');let unitMatches=0;
-        $$('.week-item',block).forEach(item=>{
-          const weekText=normalize(`${$('label',item)?.textContent||''} ${$('span',item)?.textContent||''}`);
-          const match=courseAllowed&&(!query||weekText.includes(query)||unitText.includes(query));
-          item.hidden=!match;if(match){matches++;courseMatches++;unitMatches++;}
-        });
-        block.hidden=!unitMatches;if(searching&&unitMatches)setUnit(block,true);
-      });
-      card.hidden=!courseMatches;
-    });
-    if(!searching&&savedExpansion){$$('.unit-block').forEach((b,i)=>setUnit(b,savedExpansion[i]));savedExpansion=null;}
-    $('#searchResults').textContent=query?`${matches} ${matches===1?'semana encontrada':'semanas encontradas'}`:`${matches} semanas para explorar`;
-    $('#noResults').hidden=matches!==0;updateExpandLabel();
-  };
-  search.addEventListener('input',applyFilter);filter.addEventListener('change',applyFilter);
-  expand.addEventListener('click',()=>{
-    const visible=$$('.unit-block').filter(b=>!b.hidden&&!b.closest('.course-card').hidden);
-    const open=!visible.every(b=>b.classList.contains('is-open'));visible.forEach(b=>setUnit(b,open));updateExpandLabel();
-  });
-  $$('.unit-toggle').forEach(button=>button.addEventListener('click',updateExpandLabel));
-  $$('.week-item input[type="file"]').forEach((input,index)=>{input.id=`task-file-${index}`;input.setAttribute('aria-label',`Seleccionar archivo: ${$('label',input.closest('.week-item')).textContent}, ${$('h3',input.closest('.course-card')).textContent}`);});
-  $$('.link-input').forEach((input,index)=>{input.setAttribute('aria-label',`Enlace de la tarea: ${$('label',input.closest('.week-item')).textContent}, ${$('h3',input.closest('.course-card')).textContent}`);input.inputMode='url';});
-  const photo=$('.about-photo img');
-  const fallback=()=>{const parent=photo.parentElement;photo.remove();const text=document.createElement('div');text.className='photo-fallback';text.textContent='JC';text.setAttribute('aria-label','Harold Jheison Carbajal Fierro');parent.append(text);};
-  photo?.addEventListener('error',fallback,{once:true});if(photo?.complete&&photo.naturalWidth===0)fallback();
-  const modal=$('#authModal');let lastFocus=null;
-  const observer=new MutationObserver(()=>{
-    if(!modal.classList.contains('hidden')){lastFocus=document.activeElement;$('#loginUserInput').focus();document.body.style.overflow='hidden';}
-    else{document.body.style.overflow='';if(lastFocus?.isConnected)lastFocus.focus();}
-  });observer.observe(modal,{attributes:true,attributeFilter:['class']});
-  document.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){
-      if(!modal.classList.contains('hidden'))$('#cancelLoginBtn').click();
-      if(menu.getAttribute('aria-expanded')==='true'){toggleMenu(false);menu.focus();}
-    }
-    if(event.key==='Tab'&&!modal.classList.contains('hidden')){
-      const fields=$$('input,button',modal).filter(el=>!el.disabled),first=fields[0],last=fields.at(-1);
-      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
-      if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
-    }
-  });
-  modal.addEventListener('click',event=>{if(event.target===modal)$('#cancelLoginBtn').click();});
-  if('IntersectionObserver' in window){
-    const sectionObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){$$('#mainNav a').forEach(link=>{const active=link.getAttribute('href')===`#${entry.target.id}`;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}}},{rootMargin:'-20% 0px -55% 0px'});
-    $$('main section[id]').forEach(section=>sectionObserver.observe(section));
+  const courses=window.PORTFOLIO_COURSES;
+  const U=window.PortfolioUtils;
+  const $=id=>document.getElementById(id);
+  const PERSONAL_KEY='portfolio-personal-v2';
+  let personal=U.cleanPersonal(null,courses),canPersist=true,editor=false;
+  try{personal=U.cleanPersonal(JSON.parse(localStorage.getItem(PERSONAL_KEY)||'null'),courses)}catch{canPersist=false}
+  let courseIndex=0,unitIndex=0,query='',favoritesOnly=false;
+  const params=new URLSearchParams(location.search);
+  const initialCourse=courses.findIndex(c=>c.id===params.get('curso'));
+  if(initialCourse>=0)courseIndex=initialCourse;
+  const initialUnit=Number(params.get('unidad'));
+  if(Number.isInteger(initialUnit)&&initialUnit>=1&&initialUnit<=4)unitIndex=initialUnit-1;
+  const expanded=new Set(),cache=new Map(),pending=new Map(),views=new Map();
+  let client=null,storage=null,storageError='No se pudo conectar con los materiales. Actualiza la página para reintentarlo.';
+  try{if(window.supabase){client=window.supabase.createClient('https://objyaoljoldznezpswxn.supabase.co','sb_publishable_NtuvCtfaapbtBJGvNG7Qlw_nA6DhnHQ',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});storage=window.PortfolioStorage.create(client)}}catch{}
+  function setEditor(active){if(editor===active)return;editor=active;applyMode();renderWeeks()}
+  let authRevision=0;
+  if(client)client.auth.onAuthStateChange((_event,session)=>{const revision=++authRevision;setTimeout(async()=>{if(revision!==authRevision)return;if(!session){setEditor(false);return}try{const {data,error}=await client.auth.getUser();if(revision===authRevision)setEditor(!error&&Boolean(data.user))}catch{if(revision===authRevision)setEditor(false)}},0)});
+  function element(tag,className,text){const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node}
+  function button(text,className,onClick){const node=element('button',className,text);node.type='button';if(onClick)node.addEventListener('click',onClick);return node}
+  let toastTimer;
+  function toast(message){$('notification').textContent=message;$('notification').classList.add('is-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('notification').classList.remove('is-visible'),4200)}
+  function savePersonal(){try{localStorage.setItem(PERSONAL_KEY,JSON.stringify(personal));canPersist=true}catch{canPersist=false;toast('Tu navegador no permite guardar el seguimiento. Los cambios durarán hasta cerrar esta página.')}updateTracking()}
+  function currentCourse(){return courses[courseIndex]}
+  function keyOf(week){return U.weekKey(currentCourse().id,week.number)}
+  function folderOf(course,week){return U.folder(course.name,week.unit.label,week.number)}
+  function updateTracking(){const course=currentCourse();const weeks=course.units.flatMap(u=>u.weeks);const reviewed=weeks.filter(w=>personal.reviewed[U.weekKey(course.id,w.number)]).length;const favorites=weeks.filter(w=>personal.favorites[U.weekKey(course.id,w.number)]).length;$('reviewCount').textContent=reviewed;$('reviewProgress').value=reviewed;$('favoriteCount').textContent=favorites;$('personalStorageNote').textContent=canPersist?'Tu seguimiento es personal':'Seguimiento temporal';const last=personal.last;if(last){const c=courses.find(c=>c.id===last.course);$('resumeText').textContent=`Continuar en la semana ${last.week} · ${c.id==='taller'?'Taller':'Algoritmos'}`}else $('resumeText').textContent='Explorar una unidad'}
+  function applyMode(){$('loginBtn').hidden=editor;$('logoutBtn').hidden=!editor;$('modeLabel').textContent=editor?'Modo de edición':'Modo de lectura'}
+  function renderCourseTabs(){$('courseTabs').replaceChildren();courses.forEach((course,index)=>{const tab=button('', 'course-tab',()=>selectCourse(index));tab.id=`course-tab-${course.id}`;tab.setAttribute('role','tab');tab.setAttribute('aria-selected',String(index===courseIndex));tab.setAttribute('aria-controls','coursePanel');tab.tabIndex=index===courseIndex?0:-1;tab.append(element('span','tab-number',String(index+1).padStart(2,'0')));const text=element('span');text.append(element('strong','',course.name),element('small','', '04 UNIDADES / 16 SEMANAS'));tab.append(text);tab.addEventListener('keydown',event=>{let next=index;if(event.key==='ArrowRight'||event.key==='ArrowDown')next=(index+1)%courses.length;else if(event.key==='ArrowLeft'||event.key==='ArrowUp')next=(index+courses.length-1)%courses.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=courses.length-1;else return;event.preventDefault();selectCourse(next);$(`course-tab-${courses[next].id}`).focus()});$('courseTabs').append(tab)});$('coursePanel').setAttribute('aria-labelledby',`course-tab-${currentCourse().id}`)}
+  function selectCourse(index){courseIndex=index;unitIndex=0;query='';favoritesOnly=false;$('taskSearch').value='';renderExplorer();$(`course-tab-${courses[index].id}`).focus()}
+  function renderUnits(){$('unitTabs').replaceChildren();currentCourse().units.forEach((unit,index)=>{const tab=button(unit.label,'unit-tab',()=>{unitIndex=index;query='';favoritesOnly=false;$('taskSearch').value='';renderExplorer();$('unitTabs').children[index].focus()});tab.setAttribute('aria-pressed',String(index===unitIndex));tab.title=unit.name;$('unitTabs').append(tab)})}
+  function renderExplorer(){renderCourseTabs();renderUnits();const course=currentCourse();$('courseEyebrow').textContent=`CURSO ${String(courseIndex+1).padStart(2,'0')} / IV CICLO`;$('courseTitle').textContent=course.name;updateTracking();applyMode();renderWeeks()}
+  function renderWeeks(){
+    const course=currentCourse(),weeks=U.findWeeks(course,unitIndex,query,favoritesOnly,personal),unit=course.units[unitIndex];
+    $('favoritesFilter').setAttribute('aria-pressed',String(favoritesOnly));
+    $('unitEyebrow').textContent=query?'BÚSQUEDA EN TODO EL CURSO':favoritesOnly?'GUARDADO POR TI':`UNIDAD ${String(unitIndex+1).padStart(2,'0')}`;
+    $('unitTitle').textContent=query?`Resultados para “${query}”`:favoritesOnly?'Mis semanas favoritas':unit.name;
+    $('shareUnit').hidden=Boolean(query||favoritesOnly);
+    $('resultCount').textContent=`${weeks.length} ${weeks.length===1?'semana':'semanas'}${query||favoritesOnly?' en este curso':''}`;
+    $('weeksList').replaceChildren();views.clear();$('emptySearch').hidden=weeks.length>0;$('expandWeeks').hidden=weeks.length===0;
+    if(!weeks.length){$('emptyTitle').textContent=query?'No encontramos ese tema.':'Todavía no hay favoritos.';$('emptyText').textContent=query?'Prueba otra palabra o el número de una semana.':'Marca una estrella para guardar una semana aquí.'}
+    let previousUnit=-1;
+    weeks.forEach(week=>{if((query||favoritesOnly)&&week.index!==previousUnit){$('weeksList').append(element('div','week-group-label',`${week.unit.label.toUpperCase()} / ${week.unit.name}`));previousUnit=week.index}$('weeksList').append(buildWeek(course,week))});updateExpandLabel();
   }
-  applyFilter();
+  function buildWeek(course,week){
+    const key=U.weekKey(course.id,week.number),folder=folderOf(course,week),isOpen=expanded.has(key);
+    const card=element('article','week-card');card.classList.toggle('is-open',isOpen);card.classList.toggle('is-reviewed',Boolean(personal.reviewed[key]));
+    const summary=element('div','week-summary'),toggle=button('','week-toggle'),body=element('div','week-body');
+    body.id=`materials-${course.id}-${week.number}`;body.hidden=!isOpen;toggle.setAttribute('aria-expanded',String(isOpen));toggle.setAttribute('aria-controls',body.id);
+    toggle.append(element('span','week-number',String(week.number).padStart(2,'0')));const title=element('span','week-title');title.append(element('small','',`SEMANA ${String(week.number).padStart(2,'0')}`),element('strong','',week.topic));const chevron=element('span','week-chevron','+');chevron.setAttribute('aria-hidden','true');toggle.append(title,chevron);
+    const star=button(personal.favorites[key]?'★':'☆','favorite-button');star.setAttribute('aria-pressed',String(Boolean(personal.favorites[key])));star.setAttribute('aria-label',`${personal.favorites[key]?'Quitar de':'Añadir a'} favoritos la semana ${week.number}`);
+    star.addEventListener('click',()=>{if(personal.favorites[key])delete personal.favorites[key];else personal.favorites[key]=true;savePersonal();if(favoritesOnly){renderWeeks();const next=$('weeksList').querySelector('.favorite-button');(next||$('favoritesFilter')).focus()}else{star.textContent=personal.favorites[key]?'★':'☆';star.setAttribute('aria-pressed',String(Boolean(personal.favorites[key])));star.setAttribute('aria-label',`${personal.favorites[key]?'Quitar de':'Añadir a'} favoritos la semana ${week.number}`)}});
+    summary.append(toggle,star);card.append(summary,body);const content=element('div','week-material');body.append(content);
+    const review=element('label','review-label'),check=element('input');check.type='checkbox';check.checked=Boolean(personal.reviewed[key]);review.append(check,element('span','', 'Marcar esta semana como revisada'));check.addEventListener('change',()=>{if(check.checked)personal.reviewed[key]=true;else delete personal.reviewed[key];card.classList.toggle('is-reviewed',check.checked);savePersonal()});body.append(review);
+    const view={key,course,week,folder,card,toggle,body,content,star};views.set(key,view);
+    toggle.addEventListener('click',()=>setOpen(view,body.hidden,true));
+    if(isOpen)loadMaterials(view);
+    return card;
+  }
+  function setOpen(view,open,remember){view.body.hidden=!open;view.card.classList.toggle('is-open',open);view.toggle.setAttribute('aria-expanded',String(open));if(open){expanded.add(view.key);if(remember){personal.last={course:view.course.id,week:view.week.number};savePersonal()}loadMaterials(view)}else expanded.delete(view.key);updateExpandLabel()}
+  function updateExpandLabel(){const allOpen=views.size>0&&Array.from(views.values()).every(view=>!view.body.hidden);$('expandWeeks').replaceChildren(document.createTextNode(allOpen?'Cerrar todas ':'Abrir todas '),element('span','',allOpen?'−':'+'))}
+  async function fetchMaterials(folder,refresh){if(!storage)throw new Error(storageError);if(refresh)cache.delete(folder);if(cache.has(folder))return cache.get(folder);if(pending.has(folder))return pending.get(folder);const request=storage.read(folder).then(data=>{cache.set(folder,data);return data}).finally(()=>pending.delete(folder));pending.set(folder,request);return request}
+  async function loadMaterials(view,refresh=false){
+    if(view.loading)return;view.loading=true;const content=view.content;content.setAttribute('aria-busy','true');const loading=element('div','loading-material');loading.append(element('span','spinner'),element('span','','Cargando materiales…'));content.replaceChildren(loading);
+    try{const data=await fetchMaterials(view.folder,refresh);if(views.get(view.key)===view)renderMaterials(view,data)}catch{if(views.get(view.key)===view){const error=element('div','material-error');error.append(element('p','','No se pudieron cargar los materiales. Comprueba tu conexión y vuelve a intentarlo.'),button('Reintentar ↻','',()=>loadMaterials(view,true)));content.replaceChildren(error)}}finally{view.loading=false;content.setAttribute('aria-busy','false')}
+  }
+  function renderMaterials(view,data){
+    const root=view.content;root.replaceChildren();const top=element('div','material-top');top.append(element('h5','','MATERIALES DE LA SEMANA'),button('Actualizar ↻','refresh-material',()=>loadMaterials(view,true)));root.append(top);
+    const files=element('div','material-content');root.append(files);
+    if(!data.files.length)files.append(element('p','no-material','Esta semana todavía no tiene archivos guardados.'));
+    data.files.forEach(file=>{const row=element('div','file-row'),ext=file.name.split('.').pop().toUpperCase(),url=storage.publicUrl(view.folder,file.name);row.append(element('span','file-type',ext.length<=4?ext:'FILE'));const link=element('a','file-link');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.append(element('strong','',file.name.replace(/_/g,' ')));const size=U.formatSize(Number(file.metadata&&file.metadata.size));link.append(element('small','',`${ext}${size?' / '+size:''}`));row.append(link);const open=element('a','file-open','↗');open.href=url;open.target='_blank';open.rel='noopener noreferrer';open.setAttribute('aria-label',`Abrir ${file.name}`);row.append(open);if(editor)row.append(deleteButton(view,file.name));files.append(row)});
+    if(data.hasLink){const section=element('div','link-section');section.append(element('h5','link-heading','ENLACE DE LA TAREA'));if(data.link){const row=element('div','task-link');row.append(element('span','link-icon','↗'));const link=element('a');link.href=data.link;link.target='_blank';link.rel='noopener noreferrer';link.append(element('strong','','Abrir enlace de la tarea'),element('small','',new URL(data.link).hostname+new URL(data.link).pathname));row.append(link);if(editor)row.append(deleteButton(view,'enlace.json'));section.append(row)}else{section.append(element('p','link-warning',data.linkError));if(editor)section.append(deleteButton(view,'enlace.json'))}root.append(section)}
+    if(editor){root.append(buildUploadForm(view),buildLinkForm(view,data.link))}
+  }
+  function requireEditor(){if(editor)return true;toast('Ingresa al modo de edición para administrar el material.');return false}
+  function messageFor(error,action){const message=String(error&&error.message||'');if(/already exists|duplicate/i.test(message))return 'Ya existe un archivo con ese nombre. Renómbralo para conservar ambos.';if(/row.level|unauthorized|permission|403/i.test(message))return 'El almacenamiento no permitió este cambio. Comprueba el acceso de tu cuenta en Supabase.';if(/50 MB|vacío|archivo PDF|dirección web/i.test(message))return message;return `No se pudo ${action}. Comprueba tu conexión y vuelve a intentarlo.`}
+  function buildUploadForm(view){
+    const form=element('form','upload-form');form.append(element('h6','','AÑADIR ARCHIVO'));const label=element('label','dropzone'),input=element('input');input.type='file';input.accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar';input.setAttribute('aria-label',`Seleccionar archivo para la semana ${view.week.number}`);const copy=element('span');copy.append(element('strong','','Selecciona o arrastra un archivo'),element('small','','PDF, Word, imágenes, ZIP o RAR · hasta 50 MB'));label.append(copy,input);form.append(label);const submit=button('Subir archivo ↗','button button-primary');submit.type='submit';const error=element('p','form-message');error.setAttribute('role','alert');form.append(submit,error);let selectedFile=null;
+    const select=file=>{selectedFile=file||null;copy.firstElementChild.textContent=selectedFile?selectedFile.name:'Selecciona o arrastra un archivo';copy.lastElementChild.textContent=selectedFile?U.formatSize(selectedFile.size):'PDF, Word, imágenes, ZIP o RAR · hasta 50 MB';error.textContent=selectedFile?U.validateFile(selectedFile)||'':''};
+    input.addEventListener('change',()=>select(input.files[0]));label.addEventListener('dragover',event=>{event.preventDefault();label.classList.add('is-dragging')});label.addEventListener('dragleave',()=>label.classList.remove('is-dragging'));label.addEventListener('drop',event=>{event.preventDefault();label.classList.remove('is-dragging');select(event.dataTransfer.files[0])});
+    form.addEventListener('submit',async event=>{event.preventDefault();if(!requireEditor())return;error.textContent=U.validateFile(selectedFile)||'';if(error.textContent)return;if(!storage){error.textContent=storageError;return}submit.disabled=true;input.disabled=true;const file=selectedFile;submit.textContent='Subiendo…';try{await storage.upload(view.folder,file);cache.delete(view.folder);toast('Archivo guardado.');await loadMaterials(view,true)}catch(err){error.textContent=messageFor(err,'subir el archivo')}finally{submit.disabled=false;input.disabled=false;submit.textContent='Subir archivo ↗'}});return form;
+  }
+  function buildLinkForm(view,url){const form=element('form','link-form'),label=element('label','','Enlace de la tarea'),input=element('input');input.id=`link-${view.key.replace(':','-')}`;input.type='text';input.inputMode='url';input.autocomplete='url';input.placeholder='https://…';input.value=url||'';label.htmlFor=input.id;form.append(label,input);const submit=button(url?'Actualizar enlace ↗':'Guardar enlace ↗','button button-outline');submit.type='submit';const error=element('p','form-message');error.setAttribute('role','alert');form.append(submit,error);form.addEventListener('submit',async event=>{event.preventDefault();if(!requireEditor())return;if(!U.safeUrl(input.value)){error.textContent='Escribe una dirección válida, por ejemplo https://github.com/usuario/proyecto.';return}if(!storage){error.textContent=storageError;return}submit.disabled=true;error.textContent='';const text=submit.textContent;submit.textContent='Guardando…';try{await storage.saveLink(view.folder,input.value);cache.delete(view.folder);toast('Enlace guardado.');await loadMaterials(view,true)}catch(err){error.textContent=messageFor(err,'guardar el enlace')}finally{submit.disabled=false;submit.textContent=text}});return form}
+  let confirmResolve=null;
+  function askDelete(name){if(confirmResolve)return Promise.resolve(false);$('confirmTitle').textContent=name==='enlace.json'?'¿Eliminar este enlace?':'¿Eliminar este archivo?';$('confirmText').textContent=name==='enlace.json'?'El enlace dejará de aparecer en esta semana.':`“${name}” se eliminará del almacenamiento de esta semana.`;return new Promise(resolve=>{confirmResolve=resolve;$('confirmModal').showModal();$('cancelDelete').focus()})}
+  function closeConfirm(value){const resolve=confirmResolve;confirmResolve=null;$('confirmModal').close();if(resolve)resolve(value)}
+  $('cancelDelete').addEventListener('click',()=>closeConfirm(false));$('confirmDelete').addEventListener('click',()=>closeConfirm(true));$('confirmModal').addEventListener('cancel',event=>{event.preventDefault();closeConfirm(false)});
+  function deleteButton(view,name){const remove=button('Eliminar','delete-material',async()=>{if(!requireEditor()||!storage)return;if(!await askDelete(name)||!requireEditor())return;remove.disabled=true;try{await storage.remove(view.folder,name);cache.delete(view.folder);toast(name==='enlace.json'?'Enlace eliminado.':'Archivo eliminado.');await loadMaterials(view,true)}catch(error){toast(messageFor(error,'eliminar el material'))}finally{remove.disabled=false}});remove.setAttribute('aria-label',`Eliminar ${name==='enlace.json'?'enlace de la tarea':name}`);return remove}
+  $('taskSearch').addEventListener('input',event=>{query=event.target.value.trim();renderWeeks()});$('favoritesFilter').addEventListener('click',()=>{favoritesOnly=!favoritesOnly;renderWeeks()});$('clearFilters').addEventListener('click',()=>{query='';favoritesOnly=false;$('taskSearch').value='';renderWeeks();$('taskSearch').focus()});
+  $('expandWeeks').addEventListener('click',()=>{const list=Array.from(views.values()),open=list.some(view=>view.body.hidden);list.forEach(view=>setOpen(view,open,false))});
+  $('resumeLink').addEventListener('click',()=>{if(!personal.last)return;const last=personal.last;courseIndex=courses.findIndex(c=>c.id===last.course);unitIndex=currentCourse().units.findIndex(unit=>unit.weeks.some(week=>week.number===last.week));query='';favoritesOnly=false;$('taskSearch').value='';renderExplorer();const view=views.get(U.weekKey(last.course,last.week));if(view){setOpen(view,true,true);requestAnimationFrame(()=>view.card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'}))}});
+  $('shareUnit').addEventListener('click',async()=>{const url=new URL(location.href);url.search='';url.searchParams.set('curso',currentCourse().id);url.searchParams.set('unidad',String(unitIndex+1));url.hash='cursos';try{await navigator.clipboard.writeText(url.href);toast('Enlace de la unidad copiado.')}catch{window.prompt('Copia el enlace de esta unidad:',url.href)}});
+  function updateTheme(){const dark=document.documentElement.dataset.theme==='dark';$('themeToggle').setAttribute('aria-pressed',String(dark));$('themeToggle').setAttribute('aria-label',dark?'Activar modo claro':'Activar modo oscuro');$('themeToggle').firstElementChild.textContent=dark?'☼':'◐';document.querySelector('meta[name="theme-color"]').content=dark?'#0c1929':'#1856a4'}
+  $('themeToggle').addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('portfolio-theme',document.documentElement.dataset.theme)}catch{}updateTheme()});updateTheme();
+  $('menuToggle').addEventListener('click',()=>{const open=$('mainNav').classList.toggle('is-open');$('menuToggle').setAttribute('aria-expanded',String(open))});document.querySelectorAll('#mainNav>a').forEach(link=>link.addEventListener('click',()=>{$('mainNav').classList.remove('is-open');$('menuToggle').setAttribute('aria-expanded','false')}));
+  $('loginBtn').addEventListener('click',()=>{$('authModalMessage').textContent='';$('authModal').showModal();$('loginUserInput').focus()});$('closeAuth').addEventListener('click',()=>$('authModal').close());
+  $('showPassword').addEventListener('click',()=>{const show=$('loginPasswordInput').type==='password';$('loginPasswordInput').type=show?'text':'password';$('showPassword').setAttribute('aria-pressed',String(show));$('showPassword').setAttribute('aria-label',show?'Ocultar contraseña':'Mostrar contraseña')});
+  $('quickLoginForm').addEventListener('submit',async event=>{
+    event.preventDefault();const email=$('loginUserInput').value.trim(),password=$('loginPasswordInput').value;
+    if(!$('loginUserInput').checkValidity()||!email||!password){$('authModalMessage').textContent='Ingresa tu correo y contraseña de administración.';return}
+    if(!client){$('authModalMessage').textContent='No se pudo conectar. Actualiza la página y vuelve a intentarlo.';return}
+    const submit=$('quickLoginForm').querySelector('button[type=submit]');submit.disabled=true;$('authModalMessage').textContent='';
+    try{const {data,error}=await client.auth.signInWithPassword({email,password});if(error||!data.user)throw error||new Error('No session');setEditor(true);$('authModal').close();$('quickLoginForm').reset();$('loginPasswordInput').type='password';$('showPassword').setAttribute('aria-pressed','false');$('showPassword').setAttribute('aria-label','Mostrar contraseña');toast('Has iniciado sesión para editar.')}catch{$('authModalMessage').textContent='No se pudo ingresar. Comprueba el correo y la contraseña de tu cuenta de administración.'}finally{submit.disabled=false}
+  });
+  $('logoutBtn').addEventListener('click',async()=>{if(!client)return;$('logoutBtn').disabled=true;try{const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;setEditor(false);toast('Has salido del modo de edición.')}catch{toast('No se pudo cerrar la sesión. Vuelve a intentarlo.')}finally{$('logoutBtn').disabled=false}});
+  [$('authModal'),$('confirmModal')].forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom){if(dialog===$('confirmModal'))closeConfirm(false);else dialog.close()}}));
+  document.addEventListener('keydown',event=>{if(event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,textarea,select,[contenteditable],dialog')){event.preventDefault();$('taskSearch').focus();$('cursos').scrollIntoView({block:'start'})}if(event.key==='Escape'){$('mainNav').classList.remove('is-open');$('menuToggle').setAttribute('aria-expanded','false')}});
+  $('floatingTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));window.addEventListener('scroll',()=>{$('floatingTop').hidden=window.scrollY<650},{passive:true});
+  if('IntersectionObserver' in window){const links=Array.from(document.querySelectorAll('#mainNav>a'));const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting)links.forEach(link=>link.classList.toggle('active',link.hash===`#${entry.target.id}`))}),{rootMargin:'-15% 0px -55% 0px'});['inicio','cursos','sobre-mi'].forEach(id=>observer.observe($(id)))}
+  renderExplorer();
 })();
