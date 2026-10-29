@@ -1,9 +1,10 @@
 /*
- * JHEIBOT 2.0 · PORTAFOLIO ACADÉMICO UPLA
- * Búsqueda en Supabase, contexto y definiciones breves de cursos.
- * Instalación: reemplazar el contenido de chatbot.js.
- * Usa el cliente sb y el bucket BUCKET existentes en index.html.
+ * JHEIBOT · PORTAFOLIO ACADÉMICO UPLA
+ * Búsqueda de tareas en Supabase, contexto y definiciones de cursos.
+ * Conserva chatbot.css y robot-chatbot.png.
+ * Usa el cliente sb y el bucket BUCKET de tu portafolio.
  */
+
 (() => {
   'use strict';
 
@@ -72,23 +73,20 @@
             data-question="Busca mis tareas de matrices">
             🔎 Buscar tareas
           </button>
-
           <button
             type="button"
             data-question="Semana 6 de Algoritmos">
             📚 Semana 6
           </button>
-
           <button
             type="button"
             data-question="¿Cuáles son los cursos?">
             📖 Cursos
           </button>
-
           <button
             type="button"
-            data-question="¿De qué trata el curso de Algoritmos y Estructura de Datos?">
-            💡 Definición
+            data-question="¿Qué significa Algoritmos y Estructura de Datos?">
+            💡 Definiciones
           </button>
         </div>
 
@@ -100,7 +98,6 @@
             placeholder="Busca tareas o pregunta algo..."
             aria-label="Tu mensaje"
             required>
-
           <button type="submit" aria-label="Enviar mensaje">➤</button>
         </form>
       </section>
@@ -108,17 +105,25 @@
 
     document.body.appendChild(widget);
 
-    // Complementa los estilos de chatbot.css.
     const estilos = document.createElement('style');
     estilos.id = 'jhei-resultados-css';
-
     estilos.textContent = `
+      .jhei-message .jhei-bubble {
+        min-width: 0;
+        white-space: pre-line;
+      }
+
+      #jhei-panel[hidden] {
+        display: none !important;
+      }
+
       .jhei-bubble .jhei-file-card {
         padding: 9px;
         margin-top: 9px;
         border: 1px solid #d6dff5;
         border-radius: 11px;
         background: #f6f8ff;
+        white-space: normal;
       }
 
       .jhei-file-card strong {
@@ -161,10 +166,6 @@
       .jhei-file-card .jhei-card-actions a {
         background: #4f46e5;
         color: white;
-      }
-
-      .jhei-message .jhei-bubble {
-        min-width: 0;
       }
 
       .jhei-suggestions {
@@ -214,25 +215,34 @@
     openBtn.addEventListener('click', () => mostrar(panel.hidden));
     closeBtn.addEventListener('click', () => mostrar(false));
 
-    const metadatos = [];
-
     const cursos = tarjetas.map(t => ({
-      nombre: t.querySelector('.course-header h3')?.textContent.trim() || 'Curso',
+      nombre:
+        t.querySelector('.course-header h3')?.textContent.trim() ||
+        'Curso',
       elemento: t
     }));
+
+    const metadatos = [];
 
     for (const curso of cursos) {
       for (const unidadEl of curso.elemento.querySelectorAll('.unit-block')) {
         const titulo = unidadEl.querySelector('.unit-toggle');
         const h4 = unidadEl.querySelector('h4');
-        const unidad = titulo?.dataset.unidad ||
-          h4?.textContent.trim() || 'Unidad';
+
+        const unidad =
+          titulo?.dataset.unidad ||
+          h4?.textContent.trim() ||
+          'Unidad';
+
         const nombreUnidad = h4?.dataset.titulo || '';
 
         for (const semanaEl of unidadEl.querySelectorAll('.week-item')) {
-          const semana = semanaEl.querySelector('label')?.textContent.trim() ||
+          const semana =
+            semanaEl.querySelector('label')?.textContent.trim() ||
             'Semana';
-          const tema = semanaEl.querySelector('span')?.textContent.trim() ||
+
+          const tema =
+            semanaEl.querySelector('span')?.textContent.trim() ||
             'Sin tema';
 
           metadatos.push({
@@ -243,13 +253,14 @@
             nombreUnidad,
             elemento: semanaEl,
             unidadEl,
-            ruta: [curso.nombre, unidad, semana].map(sanitizar).join('/')
+            ruta: [curso.nombre, unidad, semana]
+              .map(sanitizar)
+              .join('/')
           });
         }
       }
     }
 
-    // El contexto dura mientras la página permanezca abierta.
     let contexto = { curso: null, unidad: null, semana: null };
     let pendiente = null;
     let ocupado = false;
@@ -401,7 +412,6 @@
           unidad: archivo.unidad,
           semana: archivo.semana
         };
-
         irASemana(archivo);
       });
 
@@ -411,9 +421,9 @@
     }
 
     function cursoExplicito(q) {
-      if (/\balgoritm|estructura de datos|\baed\b/.test(q)) {
+      if (/\balgoritm|estructuras? de datos|\baed\b/.test(q)) {
         return cursos.find(c =>
-          /algoritm|estructura de datos/.test(limpiar(c.nombre))
+          /algoritm|estructuras? de datos/.test(limpiar(c.nombre))
         )?.nombre || null;
       }
 
@@ -426,16 +436,26 @@
       return null;
     }
 
-    // Definiciones cortas y precisas.
+    // DEFINICIONES SEPARADAS DE LOS TÉRMINOS.
     function definicionCurso(nombre) {
       const n = limpiar(nombre);
 
-      if (/algoritm|estructura de datos/.test(n)) {
-        return 'Estudia cómo resolver problemas mediante pasos ordenados y organizar los datos para utilizarlos eficientemente.';
+      if (/algoritm|estructuras? de datos/.test(n)) {
+        return (
+          'Algoritmos significa: conjunto de pasos ordenados y finitos ' +
+          'para resolver un problema o realizar una tarea.' +
+          '\n\n' +
+          'Estructura de datos significa: forma de organizar y almacenar ' +
+          'datos para facilitar su acceso y modificación.'
+        );
       }
 
       if (/taller|desarrollo de aplicacion/.test(n)) {
-        return 'Enseña a crear aplicaciones mediante la programación, el diseño y las pruebas de software.';
+        return (
+          'Taller de Desarrollo de Aplicación: curso práctico que enseña ' +
+          'a crear aplicaciones mediante la programación, el diseño ' +
+          'y las pruebas de software.'
+        );
       }
 
       return 'Todavía no tengo una definición guardada para este curso.';
@@ -449,13 +469,13 @@
       };
 
       pendiente = null;
-      burbuja(`${nombre}: ${definicionCurso(nombre)}`);
+      burbuja(definicionCurso(nombre));
     }
 
     function fragmento(q, clase) {
       const expresion = clase === 'semana'
         ? /\bsemana\s*(\d{1,2})\b/
-        : /\bunidad\s*([1-4])\b/;
+        : /\bunidad\s*(\d{1,2})\b/;
 
       const m = q.match(expresion);
       return m ? Number(m[1]) : null;
@@ -468,9 +488,9 @@
     function extraerTerminos(q) {
       const texto = q
         .replace(/\bsemana\s*\d{1,2}\b/g, ' ')
-        .replace(/\bunidad\s*[1-4]\b/g, ' ')
+        .replace(/\bunidad\s*\d{1,2}\b/g, ' ')
         .replace(
-          /\balgoritmos?\b|\baed\b|\bestructura de datos\b|\btaller\b|\bdesarrollo de aplicacion\b/g,
+          /\balgoritmos?\b|\baed\b|\bestructuras? de datos\b|\btaller\b|\bdesarrollo de aplicaciones?\b/g,
           ' '
         );
 
@@ -614,8 +634,9 @@
     async function buscarArchivos(q, opciones = {}) {
       const terminos = extraerTerminos(q);
       const actualizacion = /actualiz|recarg|refresc/.test(q);
+
       const directo =
-        /\besta semana\b|\besa semana\b|\bese curso\b|\bahi\b|\balli\b|\baqui\b/.test(q);
+        /\besta semana\b|\besa semana\b|\bese curso\b|\beste curso\b|\bahi\b|\balli\b|\baqui\b/.test(q);
 
       let alcance = metadatos;
 
@@ -668,8 +689,7 @@
         return;
       }
 
-      const soloEnlaces = /enlace|\blink\b/.test(q);
-
+      const soloEnlaces = /enlace|\blinks?\b/.test(q);
       const pensando = burbuja(
         `🔎 Revisando ${alcance.length} semana(s) en Supabase…`
       );
@@ -717,6 +737,8 @@
         if (coincidencias.length === 1) {
           recordar(coincidencias[0]);
         }
+
+        mensajes.scrollTop = mensajes.scrollHeight;
       } catch (e) {
         pensando.parentElement?.remove();
         console.warn('JheiBot: error al buscar', e);
@@ -734,10 +756,15 @@
       const unidad = fragmento(q, 'unidad');
 
       const pideArchivos =
-        /\b(busca|buscar|encuentra|localiza|muestra|muestrame|tareas|tarea|archivos|archivo|documentos|documento|subi|subidos|guarde|guardados|enlaces|enlace|pdf)\b/.test(q);
+        /\b(busca|buscar|encuentra|localiza|muestra|muestrame|tareas|tarea|archivos|archivo|documentos|documento|subi|subidos|guarde|guardados|enlaces|enlace|links|link|pdf)\b/.test(q);
 
       const pideActualizar = /actualiz|recarg|refresc/.test(q);
-      const saludo = /^(hola|buenas|buenos dias|buenas tardes|hey)\b/.test(q);
+
+      const pideDefinicion =
+        /\b(que es|que son|que significa|que significan|significado|significa|significacion|definicion|concepto|de que trata|en que consiste|que se aprende|que estudia|explica|explicame|define|defineme)\b/.test(q);
+
+      const saludo =
+        /^(hola|buenas|buenos dias|buenas tardes|hey)\b/.test(q);
 
       if (/\b(reiniciar|olvida|limpia|borrar contexto)\b/.test(q)) {
         contexto = { curso: null, unidad: null, semana: null };
@@ -750,19 +777,23 @@
         return;
       }
 
-      if (saludo) {
+      if (
+        saludo &&
+        !pideDefinicion &&
+        !pideArchivos &&
+        !especifico &&
+        semana === null &&
+        unidad === null
+      ) {
         burbuja(
-          '¡Hola! 👋 Soy JheiBot 2.0. Puedo explicar brevemente tus cursos, encontrar archivos en Supabase y recordar la semana de la que hablamos.'
+          '¡Hola! 👋 Soy JheiBot. Puedo explicar el significado de tus cursos, buscar tareas y mostrar los temas de cada semana.'
         );
         return;
       }
 
-      // Las definiciones no requieren conexión a Supabase.
-      const pideDefinicion =
-        /\b(que es|que son|que significa|significado|definicion|concepto|de que trata|en que consiste|que se aprende|que estudia|explica|explicame|define|defineme)\b/.test(q);
-
+      // Primero responde las definiciones.
       const buscaMaterial =
-        /\b(tareas?|archivos?|documentos?|enlaces?|pdf|subi|subidos|guardados)\b/.test(q);
+        /\b(tareas?|archivos?|documentos?|enlaces?|links?|pdf|subi|subidos|guardados)\b/.test(q);
 
       const referenciaCurso = /\b(curso|materia|asignatura)\b/.test(q);
 
@@ -775,11 +806,8 @@
       ) {
         if (/\b(cursos|materias|asignaturas)\b/.test(q)) {
           pendiente = null;
-
           burbuja(
-            cursos.map(c =>
-              `${c.nombre}: ${definicionCurso(c.nombre)}`
-            ).join('\n\n')
+            cursos.map(c => definicionCurso(c.nombre)).join('\n\n')
           );
           return;
         }
@@ -822,21 +850,24 @@
         pendiente = null;
       }
 
-      // Aclaración de curso: «Semana 6» → «Algoritmos».
+      // Aclaración: «Semana 6» → «Algoritmos».
       if (
         pendiente &&
         !pendiente.definicion &&
         especifico &&
         semana === null &&
         unidad === null &&
-        !pideArchivos
+        !pideArchivos &&
+        !pideActualizar
       ) {
         const p = pendiente;
         pendiente = null;
 
         return responder(
           (p.buscar ? 'Busca archivos de ' : '') +
-          (p.unidad ? `Unidad ${p.unidad} ` : `Semana ${p.semana} `) +
+          (p.unidad !== null
+            ? `Unidad ${p.unidad} `
+            : `Semana ${p.semana} `) +
           `de ${especifico}`
         );
       }
@@ -849,6 +880,16 @@
           unidad: null,
           semana: null
         };
+      }
+
+      if (semana !== null && (semana < 1 || semana > 16)) {
+        burbuja('Cada curso tiene semanas del 1 al 16.');
+        return;
+      }
+
+      if (unidad !== null && (unidad < 1 || unidad > 4)) {
+        burbuja('Cada curso tiene unidades del 1 al 4.');
+        return;
       }
 
       if ((semana !== null || unidad !== null) && !curso) {
@@ -864,14 +905,11 @@
         return;
       }
 
-      if (semana !== null && (semana < 1 || semana > 16)) {
-        burbuja('Cada curso tiene semanas del 1 al 16.');
-        return;
-      }
-
       const coincidencia = semana !== null
         ? metadatos.find(m =>
-            m.curso === curso && numero(m.semana) === semana
+            m.curso === curso &&
+            numero(m.semana) === semana &&
+            (unidad === null || numero(m.unidad) === unidad)
           )
         : unidad !== null
           ? metadatos.find(m =>
@@ -879,12 +917,18 @@
             )
           : null;
 
-      if (semana !== null && !coincidencia) {
-        burbuja('No encontré esa semana en el curso.');
+      if (
+        (semana !== null || unidad !== null) &&
+        !coincidencia
+      ) {
+        burbuja('No encontré esa semana o unidad en el curso.');
         return;
       }
 
-      if (coincidencia) recordar(coincidencia);
+      if (coincidencia) {
+        pendiente = null;
+        recordar(coincidencia);
+      }
 
       if (pideArchivos || pideActualizar) {
         return buscarArchivos(q, {
@@ -925,7 +969,8 @@
         burbuja(
           'Estos son tus cursos:\n' +
           cursos.map((c, i) => `${i + 1}. ${c.nombre}`).join('\n') +
-          '\nCada uno tiene 4 unidades y 16 semanas.'
+          '\nCada uno tiene 4 unidades y 16 semanas.' +
+          '\nPuedes preguntarme qué significa cada curso.'
         );
         return;
       }
@@ -939,14 +984,14 @@
 
       if (especifico) {
         burbuja(
-          `Estamos hablando de ${especifico}. Dime una semana o pregunta «¿Qué archivos subí?» para buscar los documentos de este curso.`
+          `Estamos hablando de ${especifico}. Puedes preguntar qué significa, indicar una semana o pedir «Busca mis tareas».`
         );
         return;
       }
 
       if (
         contexto.semana &&
-        /\b(que hay|de que trata|tema|esa|ahi|alli)\b/.test(q)
+        /\b(que hay|tema|esa|ahi|alli)\b/.test(q)
       ) {
         const m = metadatos.find(x =>
           x.curso === contexto.curso &&
@@ -957,7 +1002,11 @@
       }
 
       burbuja(
-        'Puedo buscar tareas reales por nombre (por ejemplo, «Busca matriz») o recordar conversaciones como «Semana 6 de Algoritmos» → «¿Qué archivos subí?».'
+        'Puedes preguntarme:\n\n' +
+        '• ¿Qué significa Algoritmos y Estructura de Datos?\n' +
+        '• ¿De qué trata Taller de Desarrollo de Aplicación?\n' +
+        '• Busca mis tareas de matrices.\n' +
+        '• Semana 6 de Algoritmos.'
       );
     }
 
@@ -969,7 +1018,6 @@
       ocupado = true;
       enviar.disabled = true;
       entrada.disabled = true;
-
       burbuja(mensaje, 'user');
 
       try {
@@ -987,10 +1035,8 @@
 
     formulario.addEventListener('submit', e => {
       e.preventDefault();
-
       const texto = entrada.value;
       entrada.value = '';
-
       preguntar(texto);
     });
 
@@ -1001,7 +1047,9 @@
     });
 
     burbuja(
-      '¡Hola! 👋 Soy JheiBot 2.0. Busca una tarea por nombre, pregúntame por una semana o pide la definición de un curso. Recuerdo el contexto mientras permanezcas en esta página.'
+      '¡Hola! 👋 Soy JheiBot.\n\n' +
+      'Puedo buscar tus tareas, mostrar temas por semana y explicar tus cursos.\n\n' +
+      'Prueba: «¿Qué significa Algoritmos y Estructura de Datos?»'
     );
   }
 
